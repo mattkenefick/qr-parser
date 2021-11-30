@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <title>QR Code Animator</title>
+
+        <style>
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                position: relative;
+                width: 100%;
+            }
+
+            #rebuild {
+                background: rgba(200, 200, 200, 0.1);
+                height: 320px;
+                left: 320px;
+                position: absolute;
+                top: 0;
+                width: 320px;
+            }
+
+            #rebuild span {
+                background-color: #000;
+                display: block;
+                height: 15px;
+                position: absolute;
+                width: 15px;
+            }
+
+            #rebuild span:hover {
+                cursor: pointer;
+                transform: scale(2) !important;
+                transition: transform 0.15s ease-in-out;
+            }
+        </style>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.8.0/gsap.min.js"></script>
+    </head>
+    <body>
+        <div id="rebuild">
+
+        </div>
+        <script>
+            const INPUT_BLOCKS_ACROSS = 24;
+            const OUTPUT_BLOCK_SIZE = 15;
+
+            let height = 1200;
+            let width = 1200;
+            let blockSize = 52;
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            let image;
+
+            /**
+             * Load our QR code to parse
+             *
+             * @param string source
+             * @param function callback
+             * @return Image
+             */
+            function loadImage(source = '/image/example.png', callback) {
+                const image = new Image;
+                image.src = source;
+                image.onload = callback;
+                return image;
+            }
+
+            /**
+             * Convert pixel data into stepped blocks
+             *
+             * @return array
+             */
+            function parseColorBlocks() {
+                let step = blockSize;
+                let column = 0;
+                let row = 0;
+                let index = 0;
+                let pixel = 0;
+                let output = [];
+                const pixelData = context.getImageData(0, 0, width, height);
+
+                for (row = 0; row < INPUT_BLOCKS_ACROSS; row++) {
+                    for (column = 0; column < INPUT_BLOCKS_ACROSS; column++) {
+                        const x = column * step;
+                        const y = row * step;
+
+                        index = (column * blockSize * 4) + (row * width * blockSize * 4) + 3;
+                        pixel = pixelData.data[index];
+
+                        if (pixel >= 100) {
+                            output.push({ row, column });
+                        }
+                    }
+                }
+
+                return output;
+            }
+
+            /**
+             * Draw HTML blocks
+             *
+             * @param array blockArray
+             * @return void
+             */
+            function drawBlocks(blockArray) {
+                const size = OUTPUT_BLOCK_SIZE;
+                let row, column, parent, element;
+                let left, top;
+
+                blockArray.forEach((block, index) => {
+                    row = block.row;
+                    column = block.column;
+                    left = (column * size) + 'px';
+                    top = (row * size) + 'px';
+                    parent = document.querySelector('#rebuild');
+                    child = document.createElement('span');
+
+                    parent.appendChild(child);
+
+                    animateChild(child, index, left, top);
+                });
+            }
+
+            /**
+             * Animate child in
+             *
+             * @param HTMLSpanElement child
+             * @param number index
+             * @return void
+             */
+            function animateChild(child, index, x, y) {
+                const delay = (index * Math.random()) / 100;
+                const dColor = 'rgb(' + (100 * Math.random()) + ', ' + (100 * Math.random()) + ', ' + (100 * Math.random()) + ')';
+                const oLeft = -window.innerWidth / 2 + window.innerWidth * Math.random();
+                const dLeft = x;
+                const oScale = 0; //0 + (Math.random() * 5);
+                const dScale = 1.0;
+                const oOpacity = 0.0;
+                const dOpacity = 1.0;
+                const oTop = window.innerHeight * Math.random();
+                const dTop = y;
+
+                TweenLite.fromTo(child, 1, {
+                    left: oLeft,
+                    top: oTop,
+                    opacity: oOpacity,
+                    scale: oScale,
+                }, {
+                    backgroundColor: dColor,
+                    left: dLeft,
+                    opacity: dOpacity,
+                    scale: dScale,
+                    top: dTop,
+                    delay: delay,
+                });
+            }
+
+            /**
+             * Initialize after image loading
+             *
+             * @return void
+             */
+            function init() {
+                width = image.width;
+                height = image.height;
+
+                // Set canvas size
+                canvas.width = width;
+                canvas.height = height;
+
+                // Set block size
+                blockSize = Math.round(width / INPUT_BLOCKS_ACROSS);
+
+                // Scale down QR code
+                context.drawImage(image, 0, 0, width, height);
+
+                // Get pixel data
+                const blocks = parseColorBlocks();
+
+                // Draw CSS elements
+                drawBlocks(blocks);
+
+                // Debug
+                // document.body.appendChild(canvas);
+            }
+
+            // Initialize
+            image = loadImage(undefined, init);
+        </script>
+    </body>
+</html>
