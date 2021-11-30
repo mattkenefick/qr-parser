@@ -43,13 +43,12 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.8.0/gsap.min.js"></script>
     </head>
     <body>
-        <div id="rebuild">
+        <div id="rebuild"></div>
 
-        </div>
         <script>
-            // const INPUT_FILE = '/image/example-02.png';
+            // const INPUT_FILE = './image/example-02.png';
             // const INPUT_BLOCKS_ACROSS = 24;
-            const INPUT_FILE = '/image/example-02.png';
+            const INPUT_FILE = './image/example-02.png';
             const INPUT_BLOCKS_ACROSS = 30;
             const OUTPUT_BLOCK_SIZE = 15;
 
@@ -67,7 +66,7 @@
              * @param function callback
              * @return Image
              */
-            function loadImage(source = '/image/example.png', callback) {
+            function loadImage(source = './image/example.png', callback) {
                 const image = new Image;
                 image.src = source;
                 image.onload = callback;
