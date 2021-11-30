@@ -47,7 +47,10 @@
 
         </div>
         <script>
-            const INPUT_BLOCKS_ACROSS = 24;
+            // const INPUT_FILE = '/image/example-02.png';
+            // const INPUT_BLOCKS_ACROSS = 24;
+            const INPUT_FILE = '/image/example-02.png';
+            const INPUT_BLOCKS_ACROSS = 30;
             const OUTPUT_BLOCK_SIZE = 15;
 
             let height = 1200;
@@ -89,11 +92,17 @@
                     for (column = 0; column < INPUT_BLOCKS_ACROSS; column++) {
                         const x = column * step;
                         const y = row * step;
+                        let r, g, b, a;
 
-                        index = (column * blockSize * 4) + (row * width * blockSize * 4) + 3;
-                        pixel = pixelData.data[index];
+                        index = (column * blockSize * 4) + (row * width * blockSize * 4);
+                        r = pixelData.data[index + 0];
+                        g = pixelData.data[index + 1];
+                        b = pixelData.data[index + 2];
+                        a = pixelData.data[index + 3];
 
-                        if (pixel >= 100) {
+                        // console.log(index, r, g, b, a);
+
+                        if (a >= 100 && r < 100 && g < 100 && b < 100) {
                             output.push({ row, column });
                         }
                     }
@@ -178,7 +187,11 @@
                 blockSize = Math.round(width / INPUT_BLOCKS_ACROSS);
 
                 // Scale down QR code
-                context.drawImage(image, 0, 0, width, height);
+                context.drawImage(
+                    image,
+                    0, 0, image.width, image.height,
+                    0, 0, width, height
+                );
 
                 // Get pixel data
                 const blocks = parseColorBlocks();
@@ -191,7 +204,7 @@
             }
 
             // Initialize
-            image = loadImage(undefined, init);
+            image = loadImage(INPUT_FILE, init);
         </script>
     </body>
 </html>
